@@ -1,3 +1,4 @@
+import conditions from "./conditions.js";
 const apiKey = 'ad0a5b624e504223bc1180058233101';
 //
 //const query =`http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=London`;
@@ -15,7 +16,7 @@ const inputCity = document.querySelector("#inputCity");
 
 const getWeather = async (city) => {
   
-  const url =`http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}`;
+  const url =`https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}`;
   const response = await fetch(url);
   return await response.json();
 } 
@@ -36,7 +37,7 @@ const showErrorCard = (errorMessage) => {
     header.insertAdjacentHTML('afterend', card);
 }
 
-const showWeatherCard = ({ city, country, temperature, condition }) => {
+const showWeatherCard = ({ city, country, temperature, condition, imgPath }) => {
   // generate weather card
   const card = `
                 <div class="card">
@@ -45,7 +46,7 @@ const showWeatherCard = ({ city, country, temperature, condition }) => {
                   <div class="card-value">
                     ${temperature}<sup>&degC</sup>
                   </div>
-                  <img class="card-img" src="./img/cloudy.png" alt="Weather">
+                  <img class="card-img" src="${imgPath}" alt="Weather">
                 </div>
                 <div class="card-description">${condition}</div>
                 </div>
@@ -64,12 +65,19 @@ form.onsubmit = async (event) => {
   if (data.error) {
     showErrorCard(data.error.message);
   } else {
+
+    const info = conditions.find(obj => obj.code === data.current.condition.code);
+    const condition = data.current.is_day ? info.languages[23].day_text : info.languages[23].night_text;
+    const filePath = './img/' + (data.current.is_day ? 'day' : 'night') + '/'; 
+    const fileName = (data.current.is_day ? info.day : info.night) + '.png';
+    const imgPath = filePath + fileName;
     
     const weatherData = {
       city: data.location.name,
       country: data.location.country,
       temperature: data.current.temp_c,
-      condition: data.current.condition.text,
+      condition,
+      imgPath,
     }
 
     showWeatherCard(weatherData); 
